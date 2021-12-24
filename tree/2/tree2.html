@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <script>
+	var max = 19,
+  xScale = 6,
+  zScale = 2.5,
+  yScale = 16,
+  startFrom = 0,
+  dz = 640,
+
+  // I actually want it to be slower then 60fps
+  requestAnimationFrame = function(callback) {
+      window.setTimeout(callback, 1000 / 24);
+  };
+
+function run() {
+  var ctx = document.getElementById('scene').getContext('2d'),
+    redSpiralShadow = createSpiral({
+      foreground: "#660000",
+      background: "#330000",
+      isLeft: true,
+      yLocalScale: 1.01
+    }),
+    redSpiral = createSpiral({
+      foreground: "#ff0000",
+      background: "#440000",
+      isLeft: true,
+      yLocalScale: 1
+    }),
+    cyanSpiralShadow = createSpiral({
+      foreground: "#003300",
+      background: "#000000",
+      isLeft: false,
+      yLocalScale: 1.01
+    }),
+    cyanSpiral = createSpiral({
+      foreground: "#00ffcc",
+      background: "#005633",
+      isLeft: false,
+      yLocalScale: 1
+    });
+
+  animationLoop();
+
+
+  function animationLoop() {
+    renderFrame();
+    if (startFrom > 1) {
+      startFrom = 0;
+    } else {
+      startFrom += 0.1;
+    }
+
+    requestAnimationFrame(animationLoop);
+  }
+
+  function renderFrame() {
+    ctx.clearRect(0, 0, 480, 640);
+    ctx.beginPath();
+
+    xScale *= 0.93;
+    forEachStep(redSpiralShadow);
+    forEachStep(cyanSpiralShadow);
+    xScale /= 0.93;
+
+    forEachStep(redSpiral);
+    forEachStep(cyanSpiral);
+  }
+
+  function forEachStep(callback) {
+    for (var i = -startFrom; i < max + startFrom; i += 0.08) {
+      if (i < 0 || i > max) continue;
+      callback(i);
+    }
+  }
+
+  function createSpiral(config) {
+    var sign = config.isLeft ? -1 : 1,
+      background = config.background,
+      foreground = config.foreground,
+      yLocalScale = config.yLocalScale || 1;
+
+    if (!config.isLeft) {
+      background = foreground;
+      foreground = config.background;
+    }
+
+    return function(i) {
+      var zoff = i * Math.sin(i),
+        z = dz / (dz - sign * zoff * zScale),
+        x = getX(i, z, sign),
+        y = getY(i * yLocalScale, z);
+
+      if (zoff + sign * Math.PI / 4 < 0) {
+        switchColor(foreground);
+      } else {
+        switchColor(background);
+      }
+      ctx.moveTo(x, y);
+      ctx.lineTo(getX(i + 0.03, z, sign), getY((i + 0.01) * yLocalScale, z));
+    };
+  }
+
+  function switchColor(color) {
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+  }
+
+  function getX(i, z, sign) {
+    return sign * i * Math.cos(i) * z * xScale + 255;
+  }
+
+  function getY(i, z) {
+    return i * z * yScale + 50;
+  }
+}
+	</script>
+	<style>
+	.vintage1{
+background: #EEE url(data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAHklEQVQImWNkYGBgYGD4//8/A5wF5SBYyAr+//8PAPOCFO0Q2zq7AAAAAElFTkSuQmCC) repeat;
+text-shadow: 5px -5px black, 4px -4px white;
+font-weight: bold;
+-webkit-text-fill-color: transparent;
+-webkit-background-clip: text }
+.vintage2{
+color: transparent;
+-webkit-text-stroke: 1px red;
+letter-spacing: 0.04em;}
+.vintage3 {
+color: transparent;
+background-color : blue;
+text-shadow : rgba(255,255,255,0.5) 0 5px 6px, rgba(255,255,255,0.2) 1px 3px 3px;
+-webkit-background-clip : text;
+}
+.vintage4{
+color: gold;
+letter-spacing: 0;
+text-shadow: 0px 1px 0px #999, 0px 2px 0px #888, 0px 3px 0px #777, 0px 4px 0px #666, 0px 5px 0px #555, 0px 6px 0px #444, 0px 7px 0px #333, 0px 8px 7px #001135 }
+.vintage5{
+    font-family:cursive;text-shadow:6px 2px 2px #333;color:deeppink
+}
+.text-reflect-base{
+    color: palegreen;
+    -webkit-box-reflect:below 10px;
+}
+.text{
+    width: 300px;
+    height: 200px;
+    position: absolute;
+    left: 50%;
+    margin-left: -150px;
+    background-image: -webkit-linear-gradient(left,blue,#66ffff 10%,#cc00ff 20%,#CC00CC 30%, #CCCCFF 40%, #00FFFF 50%,#CCCCFF 60%,#CC00CC 70%,#CC00FF 80%,#66FFFF 90%,blue 100%);
+    -webkit-text-fill-color: transparent;/* 将字体设置成透明色 */
+    -webkit-background-clip: text;/* 裁剪背景图，使文字作为裁剪区域向外裁剪 */
+    -webkit-background-size: 200% 100%; 
+    -webkit-animation: masked-animation 4s linear infinite;
+    font-size: 35px;
+}
+@keyframes masked-animation {
+    0% {
+        background-position: 0  0;
+    }
+    100% {
+        background-position: -100%  0;
+    }
+}
+	</style>
+<title>Merry Christmas!</title>
+  </head>
+
+  <body onload='run()' style='background:black;text-align:center;'>
+    <canvas id='scene' width='480px' height='400px'></canvas>
+    <h2 class="text">Merry Christmas</h2>
+  </body>
+
+</html>
